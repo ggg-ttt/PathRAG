@@ -1,14 +1,26 @@
-GRAPH_FIELD_SEP = "<SEP>"
+# 图存储中用于分隔字段的特殊标记
+graph_field_sep = "<SEP>"
 
-PROMPTS = {}
+# 定义所有提示词模板的字典
+prompts = {}
 
-PROMPTS["DEFAULT_LANGUAGE"] = "English"
-PROMPTS["DEFAULT_TUPLE_DELIMITER"] = "<|>"
-PROMPTS["DEFAULT_RECORD_DELIMITER"] = "##"
-PROMPTS["DEFAULT_COMPLETION_DELIMITER"] = "<|COMPLETE|>"
-PROMPTS["process_tickers"] = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+# 默认输出语言
+prompts["DEFAULT_LANGUAGE"] = "English"
+# 元组数据分隔符，用于实体和关系数据的解析
+prompts["DEFAULT_TUPLE_DELIMITER"] = "<|>"
+# 记录分隔符，用于分隔不同的实体或关系记录
+prompts["DEFAULT_RECORD_DELIMITER"] = "##"
+# 完成标记，表示生成内容的结束
+prompts["DEFAULT_COMPLETION_DELIMITER"] = "<|COMPLETE|>"
+# 进度条动画字符序列
+prompts["process_tickers"] = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
 
-PROMPTS["DEFAULT_ENTITY_TYPES"] = ["organization", "person", "geo", "event", "category"]
+# 默认的实体类型列表
+prompts["DEFAULT_ENTITY_TYPES"] = ["organization", "person", "geo", "event", "category"]
+
+# 为了兼容现有代码，保留原始变量名
+GRAPH_FIELD_SEP = graph_field_sep
+PROMPTS = prompts
 
 PROMPTS["entity_extraction"] = """-Goal-
 Given a text document that is potentially relevant to this activity and a list of entity types, identify all entities of those types from the text and all relationships among the identified entities.
