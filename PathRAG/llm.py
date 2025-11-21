@@ -1143,25 +1143,40 @@ async def ms_model_if_cache(
 
 
 async def ms_model_complete(
-    prompt: str,
-    system_prompt: str = None,
-    history_messages: list = [],
-    keyword_extraction: bool = False,
-    **kwargs,
-) -> str:
+    prompt: str,  # 用户输入的提示文本
+    system_prompt: str = None,  # 系统提示文本，用于设定AI助手的行为和角色
+    history_messages: list = [],  # 历史消息列表，用于多轮对话场景
+    keyword_extraction: bool = False,  # 是否需要从结果中提取关键词或JSON内容
+    **kwargs,  # 额外的关键字参数，可包含模型配置、缓存等信息
+) -> str:  # 函数返回字符串类型的模型响应结果
+    # 从kwargs中提取keyword_extraction参数，如果不存在则返回None
+    # 这行代码覆盖了函数参数中的默认值，优先使用kwargs中的设置
     keyword_extraction = kwargs.pop("keyword_extraction", None)
+    
+    # 从缓存存储对象中获取模型名称配置
+    # hashing_kv是一个包含全局配置的缓存存储实例
+    # 通过访问其global_config字典获取llm_model_name配置项
     model_name = kwargs["hashing_kv"].global_config["llm_model_name"]
+    
+    # 调用带缓存功能的模型完成函数，传入所有必要参数
+    # ms_model_if_cache会先检查缓存，命中则直接返回缓存结果，未命中则调用模型API
     result = await ms_model_if_cache(
-        model_name,
-        prompt,
-        system_prompt=system_prompt,
-        history_messages=history_messages,
-        **kwargs,
+        model_name,  # 要使用的模型名称
+        prompt,  # 用户提示文本
+        system_prompt=system_prompt,  # 可选的系统提示
+        history_messages=history_messages,  # 可选的历史消息
+        **kwargs,  # 传递其他所有额外参数
     )
+    
+    # 调试代码，打印模型响应结果（当前被注释掉）
     # print("ms_res",result)
+    
+    # 如果需要提取关键词或JSON内容
     if keyword_extraction:
+        # 调用辅助函数从响应文本中定位并提取JSON格式内容
         return locate_json_string_body_from_string(result)
     
+    # 不需要特殊处理时，直接返回原始模型响应
     return result
 
 

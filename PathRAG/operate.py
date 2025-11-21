@@ -851,7 +851,7 @@ async def kg_query(
 
     # 提取查询关键词
     example_number = global_config["addon_params"].get("example_number", None)  # 获取示例数量设置
-    # 根据设置选择关键词提取示例
+    # 根据设置选择lightRAG的高低级关键词提取示例
     if example_number and example_number < len(PROMPTS["keywords_extraction_examples"]):
         examples = "\n".join(
             PROMPTS["keywords_extraction_examples"][: int(example_number)]
@@ -874,7 +874,7 @@ async def kg_query(
         return PROMPTS["fail_response"]
 
 
-    # 格式化关键词提取提示模板
+    # lightRAG的关键词提取提示模板
     kw_prompt_temp = PROMPTS["keywords_extraction"]
     kw_prompt = kw_prompt_temp.format(query=query, examples=examples, language=language)
     # 调用LLM提取关键词
