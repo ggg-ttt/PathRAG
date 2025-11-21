@@ -934,45 +934,74 @@ async def kg_query(
 
     
 
+    # 判断是否只需要返回检索到的上下文信息
     if query_param.only_need_context:
+        # 如果只需要上下文，则直接返回检索到的上下文内容
         return context
+    
+    # 检查上下文是否为空
     if context is None:
+        # 如果上下文为空，返回预设的失败响应提示
         return PROMPTS["fail_response"]
+    
+    # 获取RAG响应的系统提示模板
     sys_prompt_temp = PROMPTS["rag_response"]
+    
+    # 格式化系统提示，将检索到的上下文和响应类型填入模板
+    # context_data: 检索到的相关文本上下文
+    # response_type: 期望的响应类型（可能是"总结"、"问答"等）
     sys_prompt = sys_prompt_temp.format(
         context_data=context, response_type=query_param.response_type
     )
+    
+    # 判断是否只需要返回格式化后的提示内容
     if query_param.only_need_prompt:
+        # 如果只需要提示，则直接返回格式化后的系统提示
         return sys_prompt
+    
+    # 调用模型函数生成回答
+    # use_model_func: 异步模型调用函数，可能是各种LLM的封装
+    # query: 用户的查询问题
+    # system_prompt: 包含上下文的系统提示
+    # stream: 是否启用流式输出
     response = await use_model_func(
         query,
         system_prompt=sys_prompt,
         stream=query_param.stream,
     )
+    
+    # 处理模型响应，清理不需要的内容
+    # 只有当响应是字符串类型且长度大于系统提示长度时才进行清理
     if isinstance(response, str) and len(response) > len(sys_prompt):
+        # 移除系统提示、用户、模型标记等不需要的内容
         response = (
-            response.replace(sys_prompt, "")
-            .replace("user", "")
-            .replace("model", "")
-            .replace(query, "")
-            .replace("<system>", "")
-            .replace("</system>", "")
-            .strip()
+            response.replace(sys_prompt, "")  # 移除系统提示
+            .replace("user", "")  # 移除user标记
+            .replace("model", "")  # 移除model标记
+            .replace(query, "")  # 移除原始查询
+            .replace("<system>", "")  # 移除<system>标签
+            .replace("</system>", "")  # 移除</system>标签
+            .strip()  # 去除首尾空白字符
         )
 
 
+    # 将查询结果保存到缓存中，以便后续相同查询快速响应
+    # hashing_kv: 键值存储实例，用于缓存管理
+    # CacheData: 缓存数据结构，包含查询相关的所有信息
     await save_to_cache(
         hashing_kv,
         CacheData(
-            args_hash=args_hash,
-            content=response,
-            prompt=query,
-            quantized=quantized,
-            min_val=min_val,
-            max_val=max_val,
-            mode=query_param.mode,
+            args_hash=args_hash,  # 查询参数的哈希值，作为缓存键
+            content=response,  # 模型生成的回答内容
+            prompt=query,  # 用户原始查询
+            quantized=quantized,  # 向量量化状态
+            min_val=min_val,  # 向量最小值
+            max_val=max_val,  # 向量最大值
+            mode=query_param.mode,  # 查询模式（如hybrid、local等）
         ),
     )
+    
+    # 返回模型生成的最终回答
     return response
 
 
@@ -1148,7 +1177,7 @@ async def _get_node_data(
     返回:
         包含实体、关系和文本单元上下文的元组
     """
-    # 在实体向量数据库中查询与关键词相关的实体
+    # 在实体向量数据库中查询与关键词相关的实体，底层实现不用管了
     results = await entities_vdb.query(query, top_k=query_param.top_k)
     # 如果没有查询结果，返回空的上下文
     if not len(results):
@@ -1228,7 +1257,7 @@ async def _find_most_related_text_unit_from_entities(
 ):
     """
     查找与实体最相关的文本单元
-    
+    由于抄的lightRAG所以文本块和节点关系是分开存储到，需要通过sourceid去找对应的文本块
     参数:
         node_datas: list[dict] - 实体节点数据列表
         query_param: QueryParam - 查询参数
@@ -1568,7 +1597,7 @@ import networkx as nx
 from collections import defaultdict
 async def find_paths_and_edges_with_stats(graph, target_nodes):
     """
-    查找图中节点间的路径和边，并计算统计信息
+    PathRAG自创的查找图中节点间的路径和边，并计算统计信息
     
     参数:
         graph: 图结构对象，包含节点和边信息
@@ -1763,7 +1792,7 @@ async def _find_most_related_edges_from_entities3(
     knowledge_graph_inst: BaseGraphStorage,
 ):  
     """
-    查找与给定实体节点最相关的边（关系）
+    发现给定的实体间的高得分的路径，并用自然语言描述这些路径
     
     参数:
         node_datas: 实体节点数据列表

@@ -667,7 +667,7 @@ class PathRAG:
                 self.relationships_vdb,  # 关系向量数据库
                 self.text_chunks,  # 文本块存储
                 param,  # 查询参数
-                asdict(self),  # 全局配置
+                asdict(self),  # 全局配置，即PathRAG的所有属性，从workingdir那些
                 # 设置哈希KV存储用于缓存
                 hashing_kv=self.llm_response_cache
                 if self.llm_response_cache
