@@ -64,3 +64,57 @@
 2025-11-25 19:57:45,908 - PathRAG - INFO - Writing graph with 2 nodes, 0 edges
 2025-11-25 19:57:53,999 - PathRAG - INFO - kw_prompt result:
 2025-11-25 19:57:54,006 - PathRAG - INFO - Local query uses 2 entites, 0 relations, 1 text units
+2025-11-25 20:04:22,501 - PathRAG - INFO - Logger initialized for working directory: .test/1_ms
+2025-11-25 20:04:22,501 - PathRAG - INFO - Load KV llm_response_cache with 0 data
+2025-11-25 20:04:22,501 - PathRAG - INFO - Load KV full_docs with 0 data
+2025-11-25 20:04:22,501 - PathRAG - INFO - Load KV text_chunks with 0 data
+2025-11-25 20:04:22,502 - PathRAG - INFO - [New Docs] inserting 1 docs
+2025-11-25 20:04:22,786 - PathRAG - INFO - [New Chunks] inserting 1 chunks
+2025-11-25 20:04:22,786 - PathRAG - INFO - Inserting 1 vectors to chunks
+2025-11-25 20:04:22,960 - PathRAG - INFO - [Entity Extraction]...
+2025-11-25 20:04:44,496 - PathRAG - INFO - Writing graph with 0 nodes, 0 edges
+2025-11-25 20:14:39,564 - PathRAG - INFO - Logger initialized for working directory: test/1_vllm
+2025-11-25 20:14:39,564 - PathRAG - INFO - Load KV llm_response_cache with 0 data
+2025-11-25 20:14:39,564 - PathRAG - INFO - Load KV full_docs with 0 data
+2025-11-25 20:14:39,564 - PathRAG - INFO - Load KV text_chunks with 0 data
+2025-11-25 20:14:39,566 - PathRAG - INFO - [New Docs] inserting 1 docs
+2025-11-25 20:14:39,853 - PathRAG - INFO - [New Chunks] inserting 1 chunks
+2025-11-25 20:14:39,853 - PathRAG - INFO - Inserting 1 vectors to chunks
+2025-11-25 20:14:40,027 - PathRAG - INFO - [Entity Extraction]...
+2025-11-25 20:15:00,030 - PathRAG - INFO - Writing graph with 0 nodes, 0 edges
+2025-11-25 20:16:34,822 - PathRAG - INFO - Logger initialized for working directory: test/1_vllm
+2025-11-25 20:16:34,822 - PathRAG - INFO - Load KV llm_response_cache with 0 data
+2025-11-25 20:16:34,822 - PathRAG - INFO - Load KV full_docs with 0 data
+2025-11-25 20:16:34,823 - PathRAG - INFO - Load KV text_chunks with 0 data
+2025-11-25 20:16:34,824 - PathRAG - INFO - Loaded graph from test/1_vllm/graph_chunk_entity_relation.graphml with 0 nodes, 0 edges
+2025-11-25 20:16:34,825 - PathRAG - INFO - [New Docs] inserting 1 docs
+2025-11-25 20:16:35,114 - PathRAG - INFO - [New Chunks] inserting 1 chunks
+2025-11-25 20:16:35,114 - PathRAG - INFO - Inserting 1 vectors to chunks
+2025-11-25 20:16:35,291 - PathRAG - INFO - [Entity Extraction]...
+2025-11-25 20:18:05,361 - PathRAG - INFO - Inserting entities into storage...
+2025-11-25 20:18:05,362 - PathRAG - INFO - Inserting relationships into storage...
+2025-11-25 20:18:05,362 - PathRAG - INFO - Inserting relationships into knowledge graph...
+2025-11-25 20:18:05,363 - PathRAG - WARNING - Didn't extract any entities and relationships, maybe your LLM is not working
+2025-11-25 20:18:05,363 - PathRAG - WARNING - No new entities and relationships found
+2025-11-25 20:18:05,372 - PathRAG - INFO - Writing graph with 0 nodes, 0 edges
+2025-11-25 20:18:05,437 - PathRAG - INFO - kw_prompt result:
+2025-11-25 20:18:05,437 - PathRAG - ERROR - No JSON-like structure found in the result.
+2025-11-25 20:19:55,186 - PathRAG - INFO - Logger initialized for working directory: test/1_hf
+2025-11-25 20:19:55,186 - PathRAG - INFO - Load KV llm_response_cache with 0 data
+2025-11-25 20:19:55,186 - PathRAG - INFO - Load KV full_docs with 0 data
+2025-11-25 20:19:55,186 - PathRAG - INFO - Load KV text_chunks with 0 data
+2025-11-25 20:19:55,188 - PathRAG - INFO - [New Docs] inserting 1 docs
+2025-11-25 20:19:55,496 - PathRAG - INFO - [New Chunks] inserting 1 chunks
+2025-11-25 20:19:55,497 - PathRAG - INFO - Inserting 1 vectors to chunks
+2025-11-25 20:19:55,675 - PathRAG - INFO - [Entity Extraction]...
+2025-11-25 20:20:51,625 - PathRAG - INFO - Inserting entities into storage...
+2025-11-25 20:20:51,626 - PathRAG - INFO - Inserting relationships into storage...
+2025-11-25 20:20:51,626 - PathRAG - INFO - Inserting relationships into knowledge graph...
+2025-11-25 20:20:51,627 - PathRAG - WARNING - Didn't extract any relationships
+2025-11-25 20:20:51,627 - PathRAG - INFO - Inserting entities into vector database...
+2025-11-25 20:20:51,627 - PathRAG - INFO - Inserting 2 vectors to entities
+2025-11-25 20:20:51,647 - PathRAG - INFO - Inserting relationships into vector database...
+2025-11-25 20:20:51,647 - PathRAG - INFO - Inserting 0 vectors to relationships
+2025-11-25 20:20:51,647 - PathRAG - WARNING - You insert an empty data to vector DB
+2025-11-25 20:20:51,648 - PathRAG - INFO - Writing graph with 2 nodes, 0 edges
+2025-11-25 20:21:01,127 - PathRAG - INFO - kw_prompt result:

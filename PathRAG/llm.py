@@ -1284,7 +1284,7 @@ async def local_model_complete(
 @lru_cache(maxsize=1)
 def initialize_vllm_model(model_name: str):
     """加载 vLLM 聊天模型并缓存"""
-    model = LLM(model_name, device=device, max_model_len=8192)#修改
+    model = LLM(model_name, max_model_len=8192)#修改：移除不支持的 device 参数
     return model
 
 
