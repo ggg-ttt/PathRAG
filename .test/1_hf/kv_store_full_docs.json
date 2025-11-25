@@ -1,0 +1,5 @@
+{
+  "doc-e443810737d4ea6a65bbbf77140a77e5": {
+    "content": "LiHua-World 是一个专门为本地 RAG (检索增强生成)场景设计的数据集。该数据集包含了一个名为 LiHua 的虚拟用户一年内的聊天记录。\n\n数据集特点\n包含三种类型的问题:\n单跳问题 (Single-hop)\n多跳问题 (Multi-hop)\n总结性问题 (Summary)\n每个问题都配有人工标注的答案和支持文档\n聊天记录涵盖了日常生活的多个方面,包括:\n社交互动\n健身训练\n娱乐活动\n生活事务\n...\n数据集结构\n数据集主要包含以下部分:\n\n1. 原始聊天记录 (./data)\n按时间顺序组织的聊天消息\n每条消息包含:\n时间戳\n发送者\n消息内容\n消息类型 为了方便组织，每个文件夹包含的是一周的聊天记录。\n2. 问答数据 (/qa)\nquery_set.csv: 包含问题、标准答案和证据\nquery_set.json: CSV文件的JSON格式版本\n3. 元数据\n用户信息\n时间范围: 2026年1月至12月\n对话参与者列表\n使用说明\nStep1. 在./data文件夹下，解压LiHuaWorld.zip，获取原始聊天记录。\n\nStep2. 使用./data下的所有聊天记录作为知识库。\n\nStep3. 使用./qa下的query_set.csv或是query_set.json作为问题，进行RAG测试。"
+  }
+}

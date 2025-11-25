@@ -39,6 +39,7 @@ class RAGRunner:
         self.llm_model_kwargs = llm_model_kwargs or {}
         self.embedding_dim = embedding_dim
         self.embedding_max_token_size = embedding_max_token_size
+        # device 参数允许外部显式指定推理设备；若未传入，则优先使用 GPU，找不到 CUDA 再回落 CPU。
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         if not os.path.exists(self.working_dir):
             os.makedirs(self.working_dir, exist_ok=True)

@@ -229,7 +229,7 @@ def initialize_hf_model(model_name):
     # 是否使用 GPU，如果无 GPU 则回退到 CPU
     use_gpu = torch.cuda.is_available()
     dtype = torch.bfloat16 if use_gpu else torch.float32
-    device_map = "auto" if use_gpu else "cpu"
+    device_map = "cuda:0" if use_gpu else "cpu"
 
     # 加载 tokenizer
     tokenizer = AutoTokenizer.from_pretrained(

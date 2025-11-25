@@ -1894,11 +1894,11 @@ async def _find_most_related_edges_from_entities3(
             if edge0==None or edge1==None or edge2==None:
                 print(path,"边丢失")
                 if edge0==None:
-                    # print("edge0丢失")
+                    print("edge0丢失")
                 if edge1==None:
-                    # print("edge1丢失")
+                    print("edge1丢失")
                 if edge2==None:
-                    # print("edge2丢失")
+                    print("edge2丢失")
                 continue
             e1 = "through edge ("+edge0["keywords"]+") to connect to "+s_name+" and "+b1_name+"."
             e2 = "through edge ("+edge1["keywords"]+") to connect to "+b1_name+" and "+b2_name+"."
