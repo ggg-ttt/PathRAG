@@ -1838,7 +1838,7 @@ async def _find_most_related_edges_from_entities3(
     # 按路径权重降序排序
     all_results = sorted(all_results, key=lambda x: x[1], reverse=True)
     
-    # 边去重
+    # 边去重:因为以上把不同路径、不同遍历方向产生的同一条无向边都收集了
     seen = set()  # 用于记录已处理的边
     result_edge = []  # 存储去重后的边及其权重
     for edge, weight in all_results:
