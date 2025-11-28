@@ -1206,7 +1206,7 @@ async def _get_node_data(
         node_datas, query_param, text_chunks_db, knowledge_graph_inst
     )
 
-    # 查找与这些实体相关的关系（边）
+    # 发现给定的实体间的高得分的路径，并用自然语言描述这些路径
     use_relations= await _find_most_related_edges_from_entities3(
         node_datas, query_param, knowledge_graph_inst
     )
@@ -1699,7 +1699,7 @@ async def find_paths_and_edges_with_stats(graph, target_nodes):
     return dict(result), path_stats , one_hop_paths, two_hop_paths, three_hop_paths
 def bfs_weighted_paths(G, path, source, target, threshold, alpha):
     """
-    使用带权重的广度优先搜索寻找从源节点到目标节点的路径
+    使用带权重的广度优先搜索对已找到的路径计算边权重。
     
     参数:
         G: 图结构对象
@@ -1832,28 +1832,28 @@ async def _find_most_related_edges_from_entities3(
                     paths = result[(node1,node2)]['paths']  # 获取这对实体间的所有路径
                     edges = result[(node1,node2)]['edges']  # 获取这对实体间涉及的所有边
                     sub_G.add_edges_from(edges)  # 将边添加到子图
-                    # 使用带权重的BFS计算路径权重
+                    # 使用带权重的BFS计算路径平均权重
                     results = bfs_weighted_paths(G, paths, node1, node2, threshold, alpha)
                     all_results += results  # 合并结果
-    # 按路径权重降序排序
+    # 按路径权重降序排序（含有重复的路径）
     all_results = sorted(all_results, key=lambda x: x[1], reverse=True)
     
     # 边去重:因为以上把不同路径、不同遍历方向产生的同一条无向边都收集了
-    seen = set()  # 用于记录已处理的边
-    result_edge = []  # 存储去重后的边及其权重
+    seen = set()  # 记录已保留的无向边（用排序后的端点表示，避免(A,B)/(B,A)重复）
+    result_edge = []  # 去掉同一无向边的重复后得到的路径，保持 all_results 的降序顺序
     for edge, weight in all_results:
-        sorted_edge = tuple(sorted(edge))  # 对边进行排序，确保(1,2)和(2,1)被视为同一条边
+        sorted_edge = tuple(sorted(edge))  # 将边端点排序，构造无向唯一标识
         if sorted_edge not in seen:
-            seen.add(sorted_edge)  # 标记为已处理
-            result_edge.append((edge, weight))  # 添加到结果列表
+            seen.add(sorted_edge)  # 标记该无向边已处理
+            result_edge.append((edge, weight))  # 仍按权重顺序保存原路径及其权重
 
     
-    # 限制不同跳数路径的数量，避免结果过多
-    length_1 = int(len(one_hop_paths)/2)  # 一跳路径数量（取一半避免重复）
-    length_2 = int(len(two_hop_paths)/2)  # 两跳路径数量（取一半避免重复）
-    length_3 = int(len(three_hop_paths)/2)  # 三跳路径数量（取一半避免重复）
     
-    results = []  # 存储最终选择的路径
+    length_1 = int(len(one_hop_paths)/2)  
+    length_2 = int(len(two_hop_paths)/2)  
+    length_3 = int(len(three_hop_paths)/2) 
+    
+    results = []  # 3种长度的路径自取前一半拼在一起的原始路径集合，用来统计候选数量，不含权重、也没排序。
     # 添加一跳路径（如果存在）
     if one_hop_paths != []:
         results = one_hop_paths[0:length_1]
@@ -1864,23 +1864,25 @@ async def _find_most_related_edges_from_entities3(
     if three_hop_paths != []:
         results = results + three_hop_paths[0:length_3]
 
-    # 限制返回的边数量
-    length = len(results)  # 总路径数
-    total_edges = 15  # 默认返回15条边
-    if length < total_edges:  # 如果总路径数少于15，调整返回数量
+    # 依据前面截取的路径数量，确定最终输出的上限
+    length = len(results)  # 当前挑选出来的路径数量
+    total_edges = 15  # 默认最多展示15条（路径/边）
+    if length < total_edges:  # 如果候选路径不足15条，则只取现有数量
         total_edges = length
     
-    sort_result = []  # 存储排序后的边
-    # 选择权重最高的边
-    if result_edge:  # 如果存在边结果
-        if len(result_edge) > total_edges:  # 如果边数量超过限制
-            sort_result = result_edge[0:total_edges]  # 取前total_edges条边
-        else: 
-            sort_result = result_edge  # 否则全部返回
-    # 提取最终结果的路径部分（去除权重）
+    sort_result = []  # 存储最终保留的(路径, 平均权重)，从 result_edge 里取前 total_edges 条（默认 15 条）后的结果，继承 result_edge 的降序顺序
+
+    if result_edge:
+        # `result_edge` 已按权重降序排列，取前 total_edges 条即可
+        if len(result_edge) > total_edges:
+            sort_result = result_edge[0:total_edges]
+        else:
+            sort_result = result_edge
+    
+    # 仅提取路径节点序列，后续用于构造自然语言描述
     final_result = []
     for edge, weight in sort_result:
-        final_result.append(edge)  # 只保留路径信息
+        final_result.append(edge)
 
     # 构建关系描述列表
     relationship = []  # 存储格式化的关系描述

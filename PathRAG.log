@@ -1,0 +1,9 @@
+2025-11-26 09:31:42,568 - PathRAG - INFO - Logger initialized for working directory: /data/gty/workspace/PathRAG/test/Qwen/Qwen3-0.6B_hf_20251126_093133
+2025-11-26 09:31:42,568 - PathRAG - INFO - Load KV llm_response_cache with 0 data
+2025-11-26 09:31:42,568 - PathRAG - INFO - Load KV full_docs with 0 data
+2025-11-26 09:31:42,568 - PathRAG - INFO - Load KV text_chunks with 0 data
+2025-11-26 09:31:42,570 - PathRAG - INFO - [New Docs] inserting 1 docs
+2025-11-26 09:31:42,852 - PathRAG - INFO - [New Chunks] inserting 1 chunks
+2025-11-26 09:31:42,852 - PathRAG - INFO - Inserting 1 vectors to chunks
+2025-11-26 09:31:43,022 - PathRAG - INFO - [Entity Extraction]...
+2025-11-26 09:32:22,010 - PathRAG - INFO - Writing graph with 0 nodes, 0 edges
