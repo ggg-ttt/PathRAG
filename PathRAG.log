@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 2025-11-25 19:41:03,324 - PathRAG - INFO - Logger initialized for working directory: .test/1_hf
 2025-11-25 19:41:03,324 - PathRAG - INFO - Load KV llm_response_cache with 0 data
 2025-11-25 19:41:03,324 - PathRAG - INFO - Load KV full_docs with 0 data
@@ -118,3 +119,14 @@
 2025-11-25 20:20:51,647 - PathRAG - WARNING - You insert an empty data to vector DB
 2025-11-25 20:20:51,648 - PathRAG - INFO - Writing graph with 2 nodes, 0 edges
 2025-11-25 20:21:01,127 - PathRAG - INFO - kw_prompt result:
+=======
+2025-11-26 09:31:42,568 - PathRAG - INFO - Logger initialized for working directory: /data/gty/workspace/PathRAG/test/Qwen/Qwen3-0.6B_hf_20251126_093133
+2025-11-26 09:31:42,568 - PathRAG - INFO - Load KV llm_response_cache with 0 data
+2025-11-26 09:31:42,568 - PathRAG - INFO - Load KV full_docs with 0 data
+2025-11-26 09:31:42,568 - PathRAG - INFO - Load KV text_chunks with 0 data
+2025-11-26 09:31:42,570 - PathRAG - INFO - [New Docs] inserting 1 docs
+2025-11-26 09:31:42,852 - PathRAG - INFO - [New Chunks] inserting 1 chunks
+2025-11-26 09:31:42,852 - PathRAG - INFO - Inserting 1 vectors to chunks
+2025-11-26 09:31:43,022 - PathRAG - INFO - [Entity Extraction]...
+2025-11-26 09:32:22,010 - PathRAG - INFO - Writing graph with 0 nodes, 0 edges
+>>>>>>> debug

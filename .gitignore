@@ -1,2 +1,5 @@
-test/
 data/
+test/
+__pycache__
+PathRAG/__pycache__
+PathRAG.log
