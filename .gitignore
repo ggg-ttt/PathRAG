@@ -1,7 +1,5 @@
 data/
 test/
 tests/
-__pycache__/
 PathRAG/__pycache__/
-PathRAG/PathRAG/__pycache__/
 PathRAG.log
