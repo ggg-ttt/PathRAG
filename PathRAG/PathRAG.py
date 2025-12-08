@@ -222,8 +222,12 @@ class PathRAG:
         """
         数据类初始化后的钩子函数，用于初始化组件和设置环境
         """
-        # 设置日志文件和日志级别
-        log_file = os.path.join("PathRAG.log")
+        # 创建工作目录（如果不存在）
+        if not os.path.exists(self.working_dir):
+            os.makedirs(self.working_dir, exist_ok=True)
+
+        # 设置日志文件和日志级别，日志写到工作目录下
+        log_file = os.path.join(self.working_dir, "PathRAG.log")
         set_logger(log_file)
         logger.setLevel(self.log_level)
 
@@ -240,11 +244,6 @@ class PathRAG:
         self.graph_storage_cls: Type[BaseGraphStorage] = self._get_storage_class()[
             self.graph_storage  # 获取图存储类
         ]
-
-        # 创建工作目录（如果不存在）
-        if not os.path.exists(self.working_dir):
-            logger.info(f"Creating working directory {self.working_dir}")
-            os.makedirs(self.working_dir)
 
         # 初始化LLM响应缓存
         self.llm_response_cache = (
