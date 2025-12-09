@@ -70,6 +70,9 @@ async def openai_complete_if_cache(
     )
     kwargs.pop("hashing_kv", None)
     kwargs.pop("keyword_extraction", None)
+    # OpenAI 兼容接口不支持 dtype/device_map 等参数，提前剔除避免 TypeError
+    kwargs.pop("dtype", None)
+    kwargs.pop("device_map", None)
     messages = []
     if system_prompt:
         messages.append({"role": "system", "content": system_prompt})

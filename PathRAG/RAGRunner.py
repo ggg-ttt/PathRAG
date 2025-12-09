@@ -3,18 +3,20 @@ import asyncio
 import torch
 from .PathRAG import PathRAG, QueryParam
 from .utils import EmbeddingFunc
-from .llm import(
-    hf_model_complete, 
+from .llm import (
+    hf_model_complete,
     hf_embedding,
-    ms_model_complete, 
+    ms_model_complete,
     ms_embedding,
-    local_model_complete, 
+    local_model_complete,
     local_embedding,
     ollama_model_complete,
     ollama_embedding,
     vllm_model_complete,
-    vllm_embedding
+    vllm_embedding,
 )
+from minirag.llm.openai import openai_complete_if_cache
+from minirag.utils import locate_json_string_body_from_string
 from transformers import AutoModel, AutoTokenizer
 import modelscope as ms
 
@@ -77,6 +79,39 @@ class RAGRunner:
                 func=lambda texts: vllm_embedding(texts, tokenizer=tokenizer, embed_model=embed_model),
             )
             llm_func = vllm_model_complete
+
+        elif self.backend == "openai":
+            # 通过本地 vLLM OpenAI 兼容服务调用模型
+            tokenizer = AutoTokenizer.from_pretrained(self.embedding_model_name)
+            embed_model = AutoModel.from_pretrained(self.embedding_model_name).to(self.device).eval()
+            embedding_func = EmbeddingFunc(
+                embedding_dim=self.embedding_dim,
+                max_token_size=self.embedding_max_token_size,
+                func=lambda texts: hf_embedding(texts, tokenizer=tokenizer, embed_model=embed_model),
+            )
+
+            vllm_base_url = os.environ.get("VLLM_SERVER_BASE_URL", "http://0.0.0.0:8001/v1")
+            vllm_api_key = os.environ.get("VLLM_API_KEY", "dummy")
+
+            async def vllm_server_complete(
+                prompt, system_prompt=None, history_messages=[], keyword_extraction=False, **kwargs
+            ):
+                keyword_extraction = kwargs.pop("keyword_extraction", None)
+                model_name = kwargs["hashing_kv"].global_config["llm_model_name"]
+                result = await openai_complete_if_cache(
+                    model=model_name,
+                    prompt=prompt,
+                    system_prompt=system_prompt,
+                    history_messages=history_messages,
+                    base_url=vllm_base_url,
+                    api_key=vllm_api_key,
+                    **kwargs,
+                )
+                if keyword_extraction:
+                    return locate_json_string_body_from_string(result)
+                return result
+
+            llm_func = vllm_server_complete
 
         elif self.backend == "ollama":
             embedding_func = EmbeddingFunc(
