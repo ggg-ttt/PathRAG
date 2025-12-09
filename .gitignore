@@ -4,3 +4,4 @@ tests/
 PathRAG/__pycache__/
 PathRAG.log
 multihop
+results
