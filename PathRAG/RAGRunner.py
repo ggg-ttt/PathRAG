@@ -147,9 +147,9 @@ class RAGRunner:
         self.rag.insert(text)
 
     def query(self, question: str, mode: str = "hybrid"):
-        #手动设置本次查询的参数
+        # 手动设置本次查询的参数
         query_param = QueryParam(
-            mode="hybrid",
+            mode=mode,
             top_k=30,
             max_token_for_text_unit=2000,      # 从 4000 减少到 2000
             max_token_for_global_context=2000, # 从 3000 减少到 2000

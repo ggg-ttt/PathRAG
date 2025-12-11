@@ -1,6 +1,7 @@
 # 导入必要的库和模块
 import asyncio  # 用于处理异步操作
 import os  # 用于文件系统操作
+import logging  # 日志级别设置
 from tqdm.asyncio import tqdm as tqdm_async  # 用于异步进度条显示
 from dataclasses import asdict, dataclass, field  # 用于数据类定义
 from datetime import datetime  # 用于获取当前时间
@@ -164,7 +165,7 @@ class PathRAG:
     graph_storage: str = field(default="NetworkXStorage")  # 图存储类型
 
     # 日志级别配置
-    current_log_level = logger.level  # 获取当前日志级别
+    current_log_level = logging.DEBUG  # 默认使用 DEBUG，确保调试日志可见
     log_level: str = field(default=current_log_level)  # 设置日志级别
 
 

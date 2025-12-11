@@ -672,9 +672,9 @@ async def extract_entities(
         # 调用LLM进行初始实体和关系提取
         final_result = await use_llm_func(hint_prompt)
 
-        # 记录提示和结果到日志文件
-        logger.debug(f"=== Entity Extraction Prompt for chunk {chunk_key} ===\n{hint_prompt}")
-        logger.debug(f"=== Entity Extraction Result for chunk {chunk_key} ===\n{final_result}")
+        # 记录提示和结果到日志文件,y已验证，没有问题
+        # logger.info(f"=== Entity Extraction Prompt for chunk {chunk_key} ===\n{hint_prompt}")
+        # logger.info(f"=== Entity Extraction Result for chunk {chunk_key} ===\n{final_result}")
 
         # 打包对话历史，用于后续的多轮提取
         # 保留上下文以实现连贯的多轮对话

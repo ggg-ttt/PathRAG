@@ -245,10 +245,15 @@ def initialize_hf_model(model_name):
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
         trust_remote_code=True,
-        torch_dtype=dtype,
+        dtype=dtype,  # torch_dtype 已弃用，改用 dtype
         device_map=device_map,
         low_cpu_mem_usage=True
     )
+
+    # 一些新版 transformers 会默认启用 DynamicCache，某些模型上可能缺少属性
+    # 这里显式关闭 cache，避免 “DynamicCache has no attribute seen_tokens” 错误
+    if hasattr(model, "config"):
+        model.config.use_cache = False
 
     # 设置 pad_token
     if tokenizer.pad_token is None:
@@ -310,13 +315,22 @@ async def hf_model_if_cache(
                     + ">\n"
                 )
 
+    # 明确指定最大长度，避免“no maximum length is provided”警告
+    max_len = getattr(hf_tokenizer, "model_max_length", None) or 2048
     input_ids = hf_tokenizer(
-        input_prompt, return_tensors="pt", padding=True, truncation=True
+        input_prompt,
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
+        max_length=max_len,
     )
     # 确保输入张量在模型所在的设备上
     inputs = {k: v.to(hf_model.device) for k, v in input_ids.items()}
     output = hf_model.generate(
-        **inputs, max_new_tokens=512, num_return_sequences=1
+        **inputs,
+        max_new_tokens=512,
+        num_return_sequences=1,
+        use_cache=False,  # 关闭缓存以兼容 DynamicCache 缺少 seen_tokens 的情况
     )
     response_text = hf_tokenizer.decode(
         output[0][len(inputs["input_ids"][0]) :], skip_special_tokens=True
