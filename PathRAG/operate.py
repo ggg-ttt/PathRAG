@@ -483,7 +483,7 @@ async def extract_entities(
         Union[BaseGraphStorage, None] - 更新后的知识图谱存储实例，发生错误时返回None
     """
     # 延迟20秒 - 可能是为了避免API限制或速率限制
-    time.sleep(20)
+    time.sleep(10)
     
     # 从全局配置获取必要参数
     use_llm_func: callable = global_config["llm_model_func"]  # LLM模型调用函数，用于文本分析和实体提取
@@ -562,6 +562,48 @@ async def extract_entities(
     continue_prompt = PROMPTS["entiti_continue_extraction"]
     if_loop_prompt = PROMPTS["entiti_if_loop_extraction"]  # 循环判断提示
 
+    # 获取LLM配置参数，用于控制上下文长度
+    llm_max_tokens = global_config["llm_model_max_token_size"]  # LLM最大token数
+    tiktoken_model_name = global_config["tiktoken_model_name"]  # tiktoken模型名称
+
+    # 辅助函数：截断对话历史，保留最近的对话
+    def truncate_history(history, max_tokens, tiktoken_model_name):
+        """
+        截断对话历史，保留最近的对话
+        
+        参数:
+            history: list - 对话历史列表
+            max_tokens: int - 最大token数
+            tiktoken_model_name: str - tiktoken模型名称
+        
+        返回:
+            list - 截断后的对话历史
+        """
+        if not history or max_tokens <= 0:
+            return history
+        
+        total_tokens = 0
+        truncated_history = []
+        
+        # 从后往前遍历，保留最近的对话
+        for msg in reversed(history):
+            msg_text = msg.get("content", "")
+            msg_tokens = encode_string_by_tiktoken(msg_text, model_name=tiktoken_model_name)
+            msg_token_count = len(msg_tokens)
+            
+            if total_tokens + msg_token_count > max_tokens:
+                break
+            truncated_history.insert(0, msg)
+            total_tokens += msg_token_count
+        
+        if len(truncated_history) < len(history):
+            logger.debug(
+                f"Truncated history from {len(history)} messages to {len(truncated_history)} messages "
+                f"({total_tokens}/{max_tokens} tokens)"
+            )
+        
+        return truncated_history
+
     # 初始化进度计数器
     already_processed = 0  # 已处理的文本块数量
     already_entities = 0   # 已提取的实体数量（含重复）
@@ -587,6 +629,40 @@ async def extract_entities(
         # 获取文本内容
         content = chunk_dp["content"]  # 提取文本块的实际内容
         
+        # 计算提示模板（不含输入文本）的token数，用于确定可用的输入文本长度
+        # 先构建不含输入文本的提示模板，用于计算模板本身的token数
+        template_without_content = entity_extract_prompt.format(
+            **context_base, input_text=""
+        )
+        template_tokens = encode_string_by_tiktoken(
+            template_without_content, model_name=tiktoken_model_name
+        )
+        template_token_count = len(template_tokens)
+        
+        # 计算可用于输入文本的最大token数（预留一些空间给响应和系统开销）
+        # 预留约500 tokens给响应和系统开销
+        available_tokens = llm_max_tokens - template_token_count - 500
+        
+        # 如果可用token数小于0，说明模板本身就已经超过限制
+        if available_tokens <= 0:
+            logger.warning(
+                f"Prompt template itself ({template_token_count} tokens) exceeds "
+                f"max token size ({llm_max_tokens}). Consider reducing examples or prompt size."
+            )
+            # 至少保留100 tokens给输入文本
+            available_tokens = max(100, llm_max_tokens - template_token_count)
+        
+        # 检查并截断输入文本
+        content_tokens = encode_string_by_tiktoken(content, model_name=tiktoken_model_name)
+        if len(content_tokens) > available_tokens:
+            logger.warning(
+                f"Content too long ({len(content_tokens)} tokens) for chunk {chunk_key}, "
+                f"truncating to {available_tokens} tokens"
+            )
+            content = decode_tokens_by_tiktoken(
+                content_tokens[:available_tokens], model_name=tiktoken_model_name
+            )
+        
         # 构建实体提取提示 - 需要两次format是因为模板中包含嵌套的占位符
         # 第一次格式化设置基本上下文，第二次格式化插入实际输入文本
         hint_prompt = entity_extract_prompt.format(
@@ -602,6 +678,12 @@ async def extract_entities(
         
         # 多轮提取循环 - 通过多次询问LLM尝试提取更多实体和关系
         for now_glean_index in range(entity_extract_max_gleaning):
+            # 在使用history前，限制其长度以确保不超过最大token数
+            # 预留空间给当前请求的提示和响应（约1000 tokens）
+            max_history_tokens = llm_max_tokens - 1000
+            if max_history_tokens > 0:
+                history = truncate_history(history, max_history_tokens, tiktoken_model_name)
+            
             # 调用LLM继续提取 - 使用continue_prompt提示LLM查找更多实体/关系
             glean_result = await use_llm_func(continue_prompt, history_messages=history)
 
@@ -615,6 +697,12 @@ async def extract_entities(
             if now_glean_index == entity_extract_max_gleaning - 1:
                 break
 
+            # 在使用history前，再次限制其长度以确保不超过最大token数
+            # 预留空间给当前请求的提示和响应（约1000 tokens）
+            max_history_tokens = llm_max_tokens - 1000
+            if max_history_tokens > 0:
+                history = truncate_history(history, max_history_tokens, tiktoken_model_name)
+            
             # 询问是否需要继续提取 - 使用if_loop_prompt判断是否还有更多实体/关系
             if_loop_result: str = await use_llm_func(
                 if_loop_prompt, history_messages=history
