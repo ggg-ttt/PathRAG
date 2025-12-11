@@ -147,4 +147,13 @@ class RAGRunner:
         self.rag.insert(text)
 
     def query(self, question: str, mode: str = "hybrid"):
-        return self.rag.query(question, param=QueryParam(mode=mode))
+        #手动设置本次查询的参数
+        query_param = QueryParam(
+            mode="hybrid",
+            top_k=30,
+            max_token_for_text_unit=2000,      # 从 4000 减少到 2000
+            max_token_for_global_context=2000, # 从 3000 减少到 2000
+            max_token_for_local_context=2000 # 从 5000 减少到 2000
+    # 总和：2000 + 2000 + 2000 = 6000 tokens（留出 ~2000 tokens 给提示词和查询）
+    )
+        return self.rag.query(question, param=query_param)
