@@ -671,7 +671,11 @@ async def extract_entities(
 
         # 调用LLM进行初始实体和关系提取
         final_result = await use_llm_func(hint_prompt)
-        
+
+        # 记录提示和结果到日志文件
+        logger.debug(f"=== Entity Extraction Prompt for chunk {chunk_key} ===\n{hint_prompt}")
+        logger.debug(f"=== Entity Extraction Result for chunk {chunk_key} ===\n{final_result}")
+
         # 打包对话历史，用于后续的多轮提取
         # 保留上下文以实现连贯的多轮对话
         history = pack_user_ass_to_openai_messages(hint_prompt, final_result)
@@ -714,6 +718,9 @@ async def extract_entities(
             # 如果不需要继续提取，退出循环
             if if_loop_result != "yes":
                 break
+
+        # 记录最终累积的提取结果
+        logger.debug(f"=== Final Accumulated Entity Extraction Result for chunk {chunk_key} ===\n{final_result}")
 
         # 分割提取结果，获取所有记录
         # 使用记录分隔符和完成分隔符分割LLM返回的文本，得到单个记录列表
