@@ -35,6 +35,12 @@ logger = logging.getLogger("PathRAG")
 
 def set_logger(log_file: str):
     logger.setLevel(logging.DEBUG)
+    logger.propagate = False  # 避免重复输出到根 logger
+
+    # 先清理旧的 handler，确保可以切换输出文件
+    for h in list(logger.handlers):
+        logger.removeHandler(h)
+        h.close()
 
     file_handler = logging.FileHandler(log_file)
     file_handler.setLevel(logging.DEBUG)
@@ -44,8 +50,7 @@ def set_logger(log_file: str):
     )
     file_handler.setFormatter(formatter)
 
-    if not logger.handlers:
-        logger.addHandler(file_handler)
+    logger.addHandler(file_handler)
 
 
 @dataclass
