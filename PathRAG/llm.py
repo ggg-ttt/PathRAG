@@ -331,6 +331,7 @@ async def hf_model_if_cache(
         max_new_tokens=512,
         num_return_sequences=1,
         use_cache=False,  # 关闭缓存以兼容 DynamicCache 缺少 seen_tokens 的情况
+        pad_token_id=hf_tokenizer.pad_token_id,  # 显式指定pad_token_id以避免警告
     )
     response_text = hf_tokenizer.decode(
         output[0][len(inputs["input_ids"][0]) :], skip_special_tokens=True
@@ -1018,11 +1019,14 @@ async def bedrock_embedding(
 
 async def hf_embedding(texts: list[str], tokenizer, embed_model) -> np.ndarray:
     device = next(embed_model.parameters()).device
-    input_ids = tokenizer(
+    # 添加attention_mask以避免警告
+    inputs = tokenizer(
         texts, return_tensors="pt", padding=True, truncation=True
-    ).input_ids.to(device)
+    ).to(device)
+    input_ids = inputs.input_ids
+    attention_mask = inputs.attention_mask
     with torch.no_grad():
-        outputs = embed_model(input_ids)
+        outputs = embed_model(input_ids, attention_mask=attention_mask)
         embeddings = outputs.last_hidden_state.mean(dim=1)
     if embeddings.dtype == torch.bfloat16:
         return embeddings.detach().to(torch.float32).cpu().numpy()
@@ -1031,11 +1035,14 @@ async def hf_embedding(texts: list[str], tokenizer, embed_model) -> np.ndarray:
 
 async def ms_embedding(texts: list[str], tokenizer, embed_model) -> np.ndarray:
     device = next(embed_model.parameters()).device
-    input_ids = tokenizer(
+    # 添加attention_mask以避免警告
+    inputs = tokenizer(
         texts, return_tensors="pt", padding=True, truncation=True
-    ).input_ids.to(device)
+    ).to(device)
+    input_ids = inputs.input_ids
+    attention_mask = inputs.attention_mask
     with torch.no_grad():
-        outputs = embed_model(input_ids)
+        outputs = embed_model(input_ids, attention_mask=attention_mask)
         embeddings = outputs.last_hidden_state.mean(dim=1)
     if embeddings.dtype == torch.bfloat16:
         return embeddings.detach().to(torch.float32).cpu().numpy()
@@ -1046,14 +1053,17 @@ async def local_embedding(texts: list[str], tokenizer=None, embed_model=None) ->
     if tokenizer is None or embed_model is None:
         raise ValueError("Tokenizer and model must be provided")
     device = next(embed_model.parameters()).device
+    # 添加attention_mask以避免警告
     encoded = tokenizer(
         texts,
         padding=True,
         truncation=True,
         return_tensors="pt"
-    ).input_ids.to(device)
+    ).to(device)
+    input_ids = encoded.input_ids
+    attention_mask = encoded.attention_mask
     with torch.no_grad():
-        outputs = embed_model(encoded)
+        outputs = embed_model(input_ids, attention_mask=attention_mask)
         embeddings = outputs.last_hidden_state.mean(dim=1)
     if embeddings.dtype == torch.bfloat16:
         return embeddings.detach().to(torch.float32).cpu().numpy()
@@ -1150,7 +1160,10 @@ async def ms_model_if_cache(
     ).to(device)
     inputs = {k: v.to(model.device) for k, v in input_ids.items()}
     output = model.generate(
-        **input_ids, max_new_tokens=512, num_return_sequences=1
+        **inputs,
+        max_new_tokens=512,
+        num_return_sequences=1,
+        pad_token_id=tokenizer.pad_token_id,  # 显式指定pad_token_id以避免警告
     )
     response_text = tokenizer.decode(
         output[0][len(inputs["input_ids"][0]) :], skip_special_tokens=True
