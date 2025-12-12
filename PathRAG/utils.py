@@ -72,20 +72,83 @@ class EmbeddingFunc:
 
 
 def locate_json_string_body_from_string(content: str) -> Union[str, None]:
+    """
+    从字符串中提取并修复JSON格式
 
+    主要修复：
+    1. 替换单引号为双引号
+    2. 为未加引号的属性名添加引号
+    3. 为未加引号的字符串值添加引号
+    """
     try:
-        maybe_json_str = re.search(r"{.*}", content, re.DOTALL)
-        if maybe_json_str is not None:
-            maybe_json_str = maybe_json_str.group(0)
-            maybe_json_str = maybe_json_str.replace("\\n", "")
-            maybe_json_str = maybe_json_str.replace("\n", "")
-            maybe_json_str = maybe_json_str.replace("'", '"')
+        # 提取JSON部分
+        match = re.search(r"{.*}", content, re.DOTALL)
+        if not match:
+            return None
 
-            return maybe_json_str
-    except Exception:
-        pass
+        json_str = match.group(0)
+        json_str = json_str.replace("\\n", "").replace("\n", "")
 
+        # 第一步：替换单引号为双引号
+        json_str = json_str.replace("'", '"')
 
+        # 第二步：修复未加引号的属性名
+        # 匹配：属性名: （确保前面没有引号）
+        def quote_property_name(m):
+            prop_name = m.group(1)
+            # 如果已经是 "prop" 格式，跳过
+            if json_str[m.start()-1:m.start()] == '"':
+                return m.group(0)
+            return f'"{prop_name}":'
+
+        json_str = re.sub(r'(\w+)(\s*):', quote_property_name, json_str)
+
+        # 第三步：修复未加引号的值
+        # 匹配：[value, value2] 或 [value] 中的未加引号值
+        def quote_array_values(arr_str):
+            # 如果是空数组或已经是正确的格式，直接返回
+            if arr_str == '[]' or arr_str == '"':
+                return arr_str
+
+            # 移除方括号
+            inner = arr_str[1:-1]
+            if not inner.strip():
+                return '[]'
+
+            # 分割并处理每个值
+            values = []
+            for v in re.split(r',\s*', inner):
+                v = v.strip()
+                # 如果值没有被引号包围且不是数字/布尔值/null，则添加引号
+                if v and v[0] != '"' and v[-1] != '"' and not re.match(r'^\d+$', v) and v not in ['true', 'false', 'null']:
+                    values.append(f'"{v}"')
+                else:
+                    values.append(v)
+
+            return f'[{", ".join(values)}]'
+
+        # 处理所有数组
+        arrays = re.findall(r'\[[^\]]*\]', json_str)
+        for arr in arrays:
+            fixed_arr = quote_array_values(arr)
+            json_str = json_str.replace(arr, fixed_arr, 1)
+
+        # 第四步：处理简单的未加引号值（如 {"key": value}）
+        def quote_simple_value(m):
+            key = m.group(1)  # "key":
+            value = m.group(2)  # value
+            # 如果value看起来像变量名
+            if re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', value) and value not in ['true', 'false', 'null']:
+                return f'{key}"{value}"'
+            return m.group(0)
+
+        json_str = re.sub(r'("[^"]+"\s*:\s*)([a-zA-Z_][a-zA-Z0-9_]*)(?=\s*[,}])', quote_simple_value, json_str)
+
+        return json_str
+    except Exception as e:
+        # 记录错误但不中断程序
+        import sys
+        print(f"JSON parsing error: {e}", file=sys.stderr)
         return None
 
 
